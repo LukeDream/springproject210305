@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <script th:src="@{/js/common/jquery-3.4.1.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+
+
+</head>
+<body>
+
+<!-- 导航条  开始    ↓  -->
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">首页</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class=""><a href="#">公文流转 <span class="sr-only">(current)</span></a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">人力资源 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/account/list">员工列表</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">系统设置 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/manager/accountList">账号列表</a></li>
+                        <li><a href="/manager/roleList">角色管理</a></li>
+                        <li><a href="/manager/permissionList">权限管理</a></li>
+
+                    </ul>
+                </li>
+            </ul>
+            </ul>
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="请输入员工工号">
+                </div>
+                <button type="submit" class="btn btn-default">搜索</button>
+            </form>
+            <ul th:if="${session.account}==null" class="nav navbar-nav navbar-right">
+
+                <!--未登陆用户 -->
+                <li><a href="/account/register">注册</a></li>
+                <li><a href="/account/login">登陆</a></li>
+            </ul>
+                <!-- 已登录用户 -->
+
+            <ul th:if="${session.account}!= null" class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        欢迎你：[[${session.account.loginName}]] <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/account/profile">个人信息</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="/account/logOut">退出登陆</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<!-- 导航条  结束    ↑  -->
+
+<h1>权限修改/添加</h1>
+<form id="p">
+权限名称: <input name="name" type="text" th:value="${permission}==null?'':${permission.name}"><br>
+URI: <input name="uri" type="text" th:value="${permission}==null?'':${permission.uri}"><br>
+权限:
+<input type="checkbox" id="c" th:checked="${permission}==null?'false':${permission.c}">c
+<input type="checkbox" id="r" th:checked="${permission}==null?'false':${permission.r}">r
+<input type="checkbox" id="u" th:checked="${permission}==null?'false':${permission.u}">u
+<input type="checkbox" id="d" th:checked="${permission}==null?'false':${permission.d}"/>d
+<br>
+ID:<input type="text" name="id" th:value="${permission}==null?'':${permission.id}">
+    <a class="btn btn-danger" href="javascript:smt();">提交</a>
+</form>
+
+<div id="com-alert" class="modal" style="z-index:9999;display: none;" >
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                <h5 class="modal-title"><i class="fa fa-exclamation-circle"></i> [Title]</h5>
+            </div>
+            <div class="modal-body small">
+                <p>[Message]</p>
+            </div>
+            <div class="modal-footer" >
+                <button type="button" class="btn btn-primary ok" data-dismiss="modal">[BtnOk]</button>
+                <button type="button" class="btn btn-default cancel" data-dismiss="modal">[BtnCancel]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+        window.Modal = function () {
+            var reg = new RegExp("\\[([^\\[\\]]*?)\\]", 'igm');
+            var alr = $("#com-alert");
+            var ahtml = alr.html();
+
+            var _tip = function (options, sec) {
+                alr.html(ahtml);    // 复原
+                alr.find('.ok').hide();
+                alr.find('.cancel').hide();
+                alr.find('.modal-content').width(500);
+                _dialog(options, sec);
+
+                return {
+                    on: function (callback) {
+                    }
+                };
+            };
+
+            var _alert = function (options) {
+                alr.html(ahtml);  // 复原
+                alr.find('.ok').removeClass('btn-success').addClass('btn-primary');
+                alr.find('.cancel').hide();
+                _dialog(options);
+
+                return {
+                    on: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            alr.find('.ok').click(function () { callback(true) });
+                        }
+                    }
+                };
+            };
+
+            var _confirm = function (options) {
+                alr.html(ahtml); // 复原
+                alr.find('.ok').removeClass('btn-primary').addClass('btn-success');
+                alr.find('.cancel').show();
+                _dialog(options);
+
+                return {
+                    on: function (callback) {
+                        if (callback && callback instanceof Function) {
+                            alr.find('.ok').click(function () { callback(true) });
+                            alr.find('.cancel').click(function () { return; });
+                        }
+                    }
+                };
+            };
+
+            var _dialog = function (options) {
+                var ops = {
+                    msg: "提示内容",
+                    title: "操作提示",
+                    btnok: "确定",
+                    btncl: "取消"
+                };
+
+                $.extend(ops, options);
+
+                var html = alr.html().replace(reg, function (node, key) {
+                    return {
+                        Title: ops.title,
+                        Message: ops.msg,
+                        BtnOk: ops.btnok,
+                        BtnCancel: ops.btncl
+                    }[key];
+                });
+
+                alr.html(html);
+                alr.modal({
+                    width: 250,
+                    backdrop: 'static'
+                });
+            }
+
+            return {
+                tip: _tip,
+                alert: _alert,
+                confirm: _confirm
+            }
+
+        }();
+    });
+    function showTip(msg, sec, callback){
+        if(!sec) {
+            sec = 1000;
+        }
+        Modal.tip({
+            title:'提示',
+            msg: msg
+        }, sec);
+        setTimeout(callback, sec);
+    }
+
+    /**
+     * 显示消息
+     * @param msg
+     */
+    function showMsg(msg, callback){
+        Modal.alert({
+            title:'提示',
+            msg: msg,
+            btnok: '确定'
+        }).on(function (e) {
+            if(callback){
+                callback();
+            }
+        });
+    }
+
+    /**
+     * 模态对话框
+     * @param msg
+     * @returns
+     */
+    function showConfirm(msg,callback){
+        //var res = false;
+        Modal.confirm(
+            {
+                title:'提示',
+                msg: msg,
+            }).on( function (e) {
+            callback();
+            //res=true;
+        });
+        //return res;
+    }
+
+
+    function deleteById(id){
+
+
+        showConfirm("确定删除？",function (){
+            var url="/account/deleteById";
+            var args = {id:id}
+
+            $.post(url,args,function (data){
+                console.log(data)
+                if(data.code==200){
+                    window.location.reload();
+                }else {
+                    alert(data.msg)
+                }
+            });
+        });
+
+
+    }
+
+    function smt(){
+        alert("异步提交")
+        var formObject={};
+        var data = $("#p").serializeArray();
+        $.each(data,function(i,item){
+            formObject[item.name] = item.value;
+        });
+        formObject["c"] = $("#c").is(':checked');
+        formObject["r"] = $("#r").is(':checked');
+        formObject["u"] = $("#u").is(':checked');
+        formObject["d"] = $("#d").is(':checked');
+
+        console.log("data"+data);
+        console.log("formObject"+formObject);
+        console.log("formObject"+JSON.stringify(formObject));
+        var url="/api/v1/manager/permission/add";
+
+        // $.post(url,formObject,function(data){
+        //     console.log(data)
+        // })
+        $.ajax({
+            type:"post",
+            url:url,
+            contentType:"application/json",
+            data: JSON.stringify(formObject),
+            dataType: "json",
+
+            success :function (msg){
+                console.log("success:"+msg)
+            },
+            error:function (msg){
+                console.log("error:"+msg)
+            }
+
+
+        })
+    }
+</script>
+
+</body>
+</html>
