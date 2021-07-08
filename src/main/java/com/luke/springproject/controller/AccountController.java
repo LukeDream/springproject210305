@@ -1,10 +1,20 @@
 package com.luke.springproject.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.github.tobato.fastdfs.domain.fdfs.MetaData;
+import com.github.tobato.fastdfs.domain.fdfs.StorePath;
+import com.github.tobato.fastdfs.domain.proto.storage.DownloadByteArray;
+import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.luke.springproject.dto.Respstat;
 import com.luke.springproject.entity.Account;
 import com.luke.springproject.service.AccountService;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ResourceUtils;
@@ -17,7 +27,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @ClassName AccountController
@@ -38,6 +50,8 @@ public class AccountController {
     public String login(){
         return "account/login";
     }
+    @Autowired
+    FastFileStorageClient fc;
 
     /**
     *@Author lulu
@@ -111,20 +125,29 @@ public class AccountController {
         Account account =(Account) httpServletRequest.getSession().getAttribute("account");
         System.out.println("password:" + password);
         System.out.println("file:" + filename.getOriginalFilename());
+        // 元数据
+        Set<MetaData> metaDataSet = new HashSet<MetaData>();
+        metaDataSet.add(new MetaData("Author", "yimingge"));
+        metaDataSet.add(new MetaData("CreateDate", "2016-01-05"));
         try {
 
 //            File path = new File(ResourceUtils.getURL("classpath:").getPath());
 //            File upload = new File(path.getAbsolutePath(),"static/uploads");
 
-            File path = new File(ResourceUtils.getURL("classpath:").getPath());
-            File upload = new File(path.getAbsolutePath(),"static/uploads");
-            System.out.println("upload:" + upload);
+//            File path = new File(ResourceUtils.getURL("classpath:").getPath());
+//            File upload = new File(path.getAbsolutePath(),"static/uploads");
+//            System.out.println("upload:" + upload);
+//
+//            //文件转存
+//            filename.transferTo(new File("/users/lulu/Documents/uploads/"+"/"+filename.getOriginalFilename()));
 
-            //文件转存
-            filename.transferTo(new File("/users/lulu/Documents/uploads/"+"/"+filename.getOriginalFilename()));
+            StorePath uploadFile = null;
+//            uploadFile = fc.uploadFile(filename.getInputStream(), filename.getSize(), FilenameUtils.getExtension(filename.getOriginalFilename()), metaDataSet);
+            uploadFile = fc.uploadImageAndCrtThumbImage(filename.getInputStream(),filename.getSize(), FilenameUtils.getExtension(filename.getOriginalFilename()),metaDataSet);
+
 
             account.setPassword(password);
-            account.setLocation(filename.getOriginalFilename());
+            account.setLocation(uploadFile.getPath());
             accountSrv.update(account);
 
         } catch (IllegalStateException e) {
@@ -135,5 +158,19 @@ public class AccountController {
             e.printStackTrace();
         }
         return "account/profile";
+    }
+
+
+    @RequestMapping("/down")
+    @ResponseBody
+    public ResponseEntity<byte[]> down(){
+        DownloadByteArray cb = new DownloadByteArray();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment","aaa.xx");
+
+        byte[] bs = fc.downloadFile("group1","M00/00/00/CtM3A2BmvJ-AQ5n6AAKhLNdnGro86.jpeg",cb);
+
+        return  new ResponseEntity<>(bs,headers, HttpStatus.OK);
     }
 }

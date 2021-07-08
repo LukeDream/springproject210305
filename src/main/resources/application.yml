@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: test
+server:
+  port: 8081
+
+fdfs:
+  tracker-list:
+  - 10.211.55.3:22122
+  connect-timeout: 600
+  so-timeout: 1500
+  thumb-image:
+    height: 200
+    width: 200

@@ -1,6 +1,7 @@
 package com.luke.springproject.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -25,5 +26,10 @@ public class MainController {
     public String index1(){
 
         return "index";
+    }
+
+    @RequestMapping("errorPage")
+    public String errorPage(Model model){
+        return "/errorPage";
     }
 }

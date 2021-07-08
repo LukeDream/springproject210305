@@ -6,8 +6,10 @@
 
 
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/skins/all.css}">
     <script th:src="@{/js/common/jquery-3.4.1.min.js}"></script>
     <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/icheck.min.js}"></script>
 
 
 </head>
@@ -87,16 +89,24 @@
 
 <h1>角色修改/添加</h1>
 <form id="p">
-角色名称: <input name="name" disabled="disabled" type="text" th:value="${role}==null?'':${role.name}"><br>
-ID: <input name="id" type="text" th:value="${role.id}"><br>
+角色名称: <input name="name" disabled="disabled" type="text" th:value="${role}==null?'':${role.name}">
+    <br/>
+    <div id="append"></div>
+ID: <input name="id" type="text" th:value="${role.id}">
+    <br>
 权限:
 
-    <span th:each="p:${pList}">
-        <input name="permissions" type="checkbox" th:value="${p.id}">[[${p.name}]]
+    <div style="display: flex" >
+        <span style="padding-left: 20px" th:each="p:${pList}">
+        <input name="permissions" type="checkbox" th:value="${p.id}" >
+        <label>[[${p.name}]]</label>
     </span>
-    <br>
+    </div>
     <a class="btn btn-danger" href="javascript:smt();">提交</a>
+
 </form>
+
+
 
 <div id="com-alert" class="modal" style="z-index:9999;display: none;" >
     <div class="modal-dialog modal-sm">
@@ -116,6 +126,22 @@ ID: <input name="id" type="text" th:value="${role.id}"><br>
     </div>
 </div>
 
+<script>
+    $(document).ready(function(){
+        $('input').each(function(){
+            var self = $(this),
+                label = self.next(),
+                label_text = label.text();
+
+            label.remove();
+            self.iCheck({
+                checkboxClass: 'icheckbox_line-red',
+                radioClass: 'iradio_line-red',
+                insert: '<div class="icheck_line-icon"></div>' + label_text
+            });
+        });
+    });
+</script>
 <script type="text/javascript">
 
     $(function () {

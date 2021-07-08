@@ -9,7 +9,7 @@
   <resultMap id="RoleResultMap" type="com.luke.springproject.entity.Role">
     <id column="rid" jdbcType="INTEGER" property="id" />
     <result column="rname" jdbcType="VARCHAR" property="name" />
-    <collection property="permissions" ofType="Permission">
+    <collection property="permissions" ofType="com.luke.springproject.entity.Permission">
       <id column="pid" jdbcType="INTEGER" property="id" />
       <result column="uri" jdbcType="VARCHAR" property="uri" />
       <result column="pname" jdbcType="VARCHAR" property="name" />
@@ -45,7 +45,7 @@
         r.name as rname,
         p.id as pid,
         p.name as pname,
-        p.uri,p.c,p.r,p.u,p,d
+        p.uri,p.c,p.r,p.u,p.d
          from role r
          inner join role_permission rp on r.id = rp.role_id
          inner join permission p on rp.permission_id = p.id

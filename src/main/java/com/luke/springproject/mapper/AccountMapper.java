@@ -27,4 +27,6 @@ public interface AccountMapper {
     int updateByPrimaryKeySelective(Account record);
 
     int updateByPrimaryKey(Account record);
+
+    Account findByLoginNameAndPassword(String loginName, String password);
 }

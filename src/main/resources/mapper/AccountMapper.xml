@@ -35,6 +35,34 @@
     </collection>
   </resultMap>
 
+  <select id="findByLoginNameAndPassword" resultMap="selectByPermissionResultMap">
+      select  a.id as aid,
+            a.login_name,
+            a.password,
+            a.location,
+            r.id as rid,
+            r.name as rname,
+            p.id as pid,
+            p.uri,
+            p.c,
+            p.u,
+            p.d,
+            p.r,
+            p.name as pname
+        from account as  a
+            inner  join account_role as ar
+                on a.id=ar.account_id
+            inner join role as r
+                on ar.role_id =r.id
+
+            left join role_permission rp
+                on r.id=rp.role_id
+            left join permission p
+                on p.id=rp.permission_id
+
+        where a.login_name = #{loginName} and a.password = #{password}
+  </select>
+
   <select id="selectByPermission"  resultMap="selectByPermissionResultMap">
     select  a.id as aid,
             a.login_name,

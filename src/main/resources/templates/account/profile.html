@@ -79,6 +79,18 @@
 <div align="center" style="width: 300px">
     <form action="/account/fileUploadController" method="post" enctype="multipart/form-data">
         <table class="table table-bordered" >
+
+
+            <tr>
+                <td>角色：</td>
+                <td>
+                    <th:block th:each="item:${session.account.permissionList}">
+                        <a>[[${item.name}]]</a>
+                    </th:block>
+
+                </td>
+            </tr>
+
             <tr>
                 <td>登录名：</td>
                 <td>[[${session.account.loginName}]]</td>

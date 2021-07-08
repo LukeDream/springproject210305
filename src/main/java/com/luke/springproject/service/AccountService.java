@@ -25,12 +25,13 @@ public class AccountService {
     AccountMapper accountMapper;
 
     public Account findByLoginNameAndPassword(String loginName, String password) {
-        AccountExample example = new AccountExample();
-        example.createCriteria().andLoginNameEqualTo(loginName)
-                .andPasswordEqualTo(password);
-        List<Account> list = accountMapper.selectByExample(example);
+//        AccountExample example = new AccountExample();
+//        example.createCriteria().andLoginNameEqualTo(loginName)
+//                .andPasswordEqualTo(password);
+//        List<Account> list = accountMapper.selectByExample(example);
+        Account account = accountMapper.findByLoginNameAndPassword(loginName,password);
 
-        return list.size() == 0?null:list.get(0);
+        return account;
 
     }
 
